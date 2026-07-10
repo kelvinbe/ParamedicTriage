@@ -7,6 +7,9 @@ A React Native application designed for paramedics to quickly capture patient tr
 </p>
 
 ---
+## Demo Video
+
+[▶ Watch the Demo](./file.mp4)
 
 ## Overview
 
@@ -223,7 +226,7 @@ Native modules such as NetInfo and MMKV are mocked to allow tests to execute wit
 Clone the repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/kelvinbe/ParamedicTriage.git
 ```
 
 Navigate into the project
