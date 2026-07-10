@@ -149,7 +149,6 @@ const TriageScreen = () => {
 
       setForm(initialForm);
 
-  // Clear validation errors
   setFormErrors({
     name: '',
     condition: '',

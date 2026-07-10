@@ -6,7 +6,6 @@ import {
 
 describe('triageStorage', () => {
   beforeEach(() => {
-    // Clear the mocked storage
     removeRecord('1');
   });
 

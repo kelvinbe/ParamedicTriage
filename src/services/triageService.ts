@@ -14,17 +14,14 @@ import {
 export const submitTriage = async(dto) => {
 
 
-  // 1. Save immediately
   await saveRecord(dto);
 
   console.log(getPendingRecords());
 
-  // 2. Check connection
   const network =
     await NetInfo.fetch();
 
 
-  // 3. Offline
   if(!network.isConnected){
 
     return {
@@ -38,12 +35,10 @@ export const submitTriage = async(dto) => {
   }
 
 
-  // 4. Online
   const response =
     await triageApi(dto);
 
 
-  // 5. Remove from queue
   await removeRecord(dto.id);
 
 
