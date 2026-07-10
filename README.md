@@ -27,6 +27,11 @@ The project simulates a backend API using a local repository with an artificial 
 
 ---
 
+# Technologies Used
+ - React Native
+ - MMKV
+ - Context API
+
 # Functionality
 
 - Create new triage records.
