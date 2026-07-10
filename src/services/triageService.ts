@@ -1,8 +1,6 @@
-// services/triageService.ts
-
 import NetInfo from '@react-native-community/netinfo';
 
-import {triageApi} from '../API/triageApi';
+import { triageApi } from '../API/triageApi';
 
 import {
   saveRecord,
@@ -10,38 +8,39 @@ import {
   getPendingRecords,
 } from './triageStorage';
 
+import { CreateTriageDto } from '../types';
 
-export const submitTriage = async(dto) => {
-
+export const submitTriage = async (
+  dto: CreateTriageDto,
+) => {
 
   await saveRecord(dto);
 
   console.log(getPendingRecords());
 
-  const network =
-    await NetInfo.fetch();
+  const network = await NetInfo.fetch();
 
-
-  if(!network.isConnected){
+  if (!network.isConnected) {
 
     return {
-      riskLevel: 'PENDING',
-      recommendation:
-        'Saved locally. Waiting for connection.',
-      estimatedWaitTime:
-        'Unknown',
+      offline: true,
+      response: {
+        riskLevel: 'PENDING',
+        recommendation:
+          'Please Waiting for connection...',
+        estimatedWaitTime: 'Unknown',
+      },
     };
 
   }
 
+  const response = await triageApi(dto);
 
-  const response =
-    await triageApi(dto);
+  removeRecord(dto.id);
 
-
-  await removeRecord(dto.id);
-
-
-  return response;
+  return {
+    offline: false,
+    response,
+  };
 
 };
