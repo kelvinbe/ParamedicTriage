@@ -43,9 +43,7 @@ export default function TriageContextProvider({ children }: Props) {
     'success',
   );
 
-  /**
-   * Hide banner after 3 seconds
-   */
+
   useEffect(() => {
     if (!syncMessage) {
       return;
@@ -58,9 +56,7 @@ export default function TriageContextProvider({ children }: Props) {
     return () => clearTimeout(timer);
   }, [syncMessage]);
 
-  /**
-   * Listen for connectivity changes
-   */
+
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(async state => {
       console.log('Connection changed:', state.isConnected);
@@ -83,9 +79,6 @@ export default function TriageContextProvider({ children }: Props) {
     return unsubscribe;
   }, []);
 
-  /**
-   * Submit patient
-   */
   const submitPatient = async (dto: CreateTriageDto) => {
     try {
       setLoading(true);
