@@ -8,6 +8,7 @@ A React Native application designed for paramedics to quickly capture patient tr
 
 ---
 ## Demo Video
+## The video is a bit big but you can download it in raw format to view the demo.
 
 [▶ Watch the Demo](./file.mp4)
 
@@ -42,7 +43,6 @@ The project simulates a backend API using a local repository with an artificial 
 - Automatic retry queue for unsent records.
 - Network status detection.
 - Automatic synchronization when internet connectivity returns.
-- Keyboard-aware layout for mobile usability.
 - Loading and error state handling.
 
 ---
