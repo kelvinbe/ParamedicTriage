@@ -1,71 +1,39 @@
-import { IPatient } from '../types';
+import { CreateTriageDto } from '../types';
 
 
 export const triageApi = async (
-    patient: IPatient,
+    dto: CreateTriageDto,
 ) => {
 
 
     return new Promise((resolve) => {
 
 
-        setTimeout(() => {
+         setTimeout(() => {
+      if (dto.priority === 1) {
+        resolve({
+          riskLevel: 'CRITICAL',
+          recommendation: 'Immediate doctor attention required',
+          estimatedWaitTime: 'Immediate',
+        });
+        return;
+      }
 
+      if (dto.priority === 2) {
+        resolve({
+          riskLevel: 'HIGH',
+          recommendation: 'Doctor assessment required',
+          estimatedWaitTime: '15 minutes',
+        });
+        return;
+      }
 
-            let response = {
-
-                riskLevel: 'LOW',
-
-                recommendation:
-                    'Patient can be monitored',
-
-                estimatedWaitTime:
-                    '30 minutes'
-
-            };
-
-
-
-            if (patient.priority === 1) {
-
-                response = {
-
-                    riskLevel: 'CRITICAL',
-
-                    recommendation:
-                        'Immediate doctor attention required',
-
-                    estimatedWaitTime:
-                        'Immediate'
-
-                };
-
-            }
-
-
-
-            if (patient.priority === 2) {
-
-                response = {
-
-                    riskLevel: 'HIGH',
-
-                    recommendation:
-                        'Doctor assessment required',
-
-                    estimatedWaitTime:
-                        '15 minutes'
-
-                };
-
-            }
-
-
-
-            resolve(response);
-
-
-        }, 1500);
+      resolve({
+        riskLevel: 'LOW',
+        recommendation: 'Patient can be monitored',
+        estimatedWaitTime: '30 minutes',
+      });
+    }, 1500);
 
 
     });
