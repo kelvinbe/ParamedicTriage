@@ -1,97 +1,305 @@
-This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+# Project Name
 
-# Getting Started
+# Paramedic Triage
 
-> **Note**: Make sure you have completed the [Set Up Your Environment](https://reactnative.dev/docs/set-up-your-environment) guide before proceeding.
+<p align="center">
+A React Native application designed for paramedics to quickly capture patient triage information in low-connectivity environments. The application prioritizes fast thumb-input, immediate clinical feedback, offline-first storage, and automatic synchronization once connectivity is restored.
+</p>
 
-## Step 1: Start Metro
+---
 
-First, you will need to run **Metro**, the JavaScript build tool for React Native.
+## Overview
 
-To start the Metro dev server, run the following command from the root of your React Native project:
+Paramedic Triage is an offline-first React Native mobile application that enables paramedics to rapidly record patient information during emergency situations.
 
-```sh
-# Using npm
+The application allows healthcare workers to:
+
+- Capture patient details using a single-screen form.
+- Classify patients by triage priority.
+- Receive an immediate risk assessment.
+- Continue working without an internet connection.
+- Automatically synchronize unsent records once connectivity returns.
+
+The project simulates a backend API using a local repository with an artificial network delay, allowing the offline synchronization queue to be demonstrated without requiring a live backend.
+
+---
+
+# Functionality
+
+- Create new triage records.
+- Form validation before submission.
+- Visual highlighting for critical patients.
+- Risk assessment based on selected priority.
+- Offline data persistence using MMKV.
+- Automatic retry queue for unsent records.
+- Network status detection.
+- Automatic synchronization when internet connectivity returns.
+- Keyboard-aware layout for mobile usability.
+- Loading and error state handling.
+
+---
+
+# Design Decisions
+
+### Offline First Architecture
+
+Emergency responders cannot always rely on stable internet connectivity. For that reason the application was designed with an offline-first approach.
+
+Whenever a submission cannot reach the simulated API, the patient record is immediately stored locally inside MMKV storage. This ensures no patient information is lost.
+
+---
+
+### MMKV Storage
+
+Instead of AsyncStorage, MMKV was selected because it offers:
+
+- significantly faster read/write performance
+- synchronous operations
+- lower overhead
+- efficient storage for mobile applications
+
+MMKV stores every pending triage record until it has been successfully synchronized.
+
+---
+
+### Context API
+
+React Context was chosen for global state management.
+
+The TriageContext is responsible for:
+
+- submitting patients
+- exposing loading state
+- exposing API errors
+- storing the latest triage response
+- coordinating synchronization
+
+Since the application is relatively small, introducing Redux or Zustand would have added unnecessary complexity.
+
+---
+
+### Component Separation
+
+The application separates UI into reusable components:
+
+- PatientInput
+- PrioritySelector
+- StatusSelector
+- SubmitButton
+
+This keeps the screen component focused on business logic while making components reusable and easier to maintain.
+
+---
+
+### Mock API
+
+The assessment specifies that a live backend is not required.
+
+Instead of building a backend server, a local mock repository simulates an API by:
+
+- introducing a network delay
+- generating triage responses based on patient priority
+
+This approach allows the synchronization queue to be fully demonstrated while keeping the project lightweight.
+
+---
+
+# Implementation Decisions
+
+### Form Validation
+
+Before submission the application validates:
+
+- Patient Name
+- Condition Description
+- Priority selection
+- Status selection
+
+Text fields must contain alphabetic characters and required selections must be made before the form can be submitted.
+
+---
+
+### Risk Classification
+
+The simulated API returns different responses depending on the selected priority.
+
+| Priority | Risk Level | Recommendation |
+|-----------|------------|----------------|
+| 1 | CRITICAL | Immediate doctor attention |
+| 2 | HIGH | Doctor assessment required |
+| 3-5 | LOW | Patient can be monitored |
+
+Critical patients are visually highlighted to make urgent cases immediately noticeable.
+
+---
+
+### Sync Queue
+
+The synchronization queue is responsible for guaranteeing eventual delivery of patient records.
+
+Each record saved offline contains:
+
+- id
+- patient details
+- synced flag
+- retry count
+- timestamp
+
+When internet connectivity becomes available:
+
+1. NetInfo detects a network change.
+2. `syncPendingRecords()` is triggered.
+3. Every pending record is sent to the simulated API.
+4. Successfully uploaded records are removed from MMKV.
+5. Failed records remain in storage for the next synchronization attempt.
+
+A synchronization lock prevents multiple sync operations from running simultaneously.
+
+---
+
+### Connectivity Monitoring
+
+The application listens for connectivity changes using:
+
+```
+@react-native-community/netinfo
+```
+
+Whenever the device reconnects to the internet, synchronization begins automatically without requiring user interaction.
+
+
+# How the Sync Queue Works
+
+### Offline Submission
+
+```
+User submits form - Network unavailable - Save record to MMKV -Display "Saved Locally"
+```
+
+---
+
+### Online Synchronization
+
+```
+Internet Restored - NetInfo detects connection - syncPendingRecords() - Loop through pending records - POST to mock API - Success?
+   │           │
+  Yes          No
+   │           │
+Remove       Keep record
+Record       for retry
+```
+
+---
+
+# Testing
+
+The project includes unit tests covering:
+
+- triage API logic
+- local storage service
+- synchronization service
+- context functionality
+- form validation
+
+Native modules such as NetInfo and MMKV are mocked to allow tests to execute without requiring a physical device.
+
+---
+
+# Technologies Used
+
+- React Native
+- TypeScript
+- React Context API
+- MMKV Storage
+- NetInfo
+- React Navigation
+- Jest
+- React Native Testing Library
+
+---
+
+# Project Setup Guide
+
+Clone the repository
+
+```bash
+git clone <repository-url>
+```
+
+Navigate into the project
+
+```bash
+cd ParamedicTriage
+```
+
+Install dependencies
+
+```bash
+npm install
+```
+
+Start Metro
+
+```bash
 npm start
-
-# OR using Yarn
-yarn start
 ```
 
-## Step 2: Build and run your app
+Run Android
 
-With Metro running, open a new terminal window/pane from the root of your React Native project, and use one of the following commands to build and run your Android or iOS app:
-
-### Android
-
-```sh
-# Using npm
+```bash
 npm run android
-
-# OR using Yarn
-yarn android
 ```
 
-### iOS
+Run tests
 
-For iOS, remember to install CocoaPods dependencies (this only needs to be run on first clone or after updating native deps).
-
-The first time you create a new project, run the Ruby bundler to install CocoaPods itself:
-
-```sh
-bundle install
+```bash
+npm test
 ```
 
-Then, and every time you update your native dependencies, run:
+---
 
-```sh
-bundle exec pod install
+# Demonstrating Offline Synchronization
+
+1. Launch the application.
+2. Disable the device internet connection.
+3. Submit one or more patient records.
+4. Observe that records are saved locally.
+5. Re-enable internet.
+6. Watch the terminal logs as pending records are synchronized automatically.
+
+Example output:
+
+```
+Connection changed: true
+
+Calling syncPendingRecords()
+
+Syncing 3 records...
+
+Synced 764cd4cd-f193...
+
+Synced 4e3043b6-3a36...
+
+Remaining records: []
 ```
 
-For more information, please visit [CocoaPods Getting Started guide](https://guides.cocoapods.org/using/getting-started.html).
+---
 
-```sh
-# Using npm
-npm run ios
+# Future Improvements
 
-# OR using Yarn
-yarn ios
-```
+- Exponential retry backoff.
+- Background synchronization using Headless JS or WorkManager.
+- Persistent synchronization history.
+- Secure encrypted storage.
+- Real REST backend integration.
+- Authentication and user sessions.
+- Patient history screen.
+- Queue status indicator within the UI.
 
-If everything is set up correctly, you should see your new app running in the Android Emulator, iOS Simulator, or your connected device.
+---
 
-This is one way to run your app — you can also build it directly from Android Studio or Xcode.
+# Author
 
-## Step 3: Modify your app
+**Kelvin Beno**
 
-Now that you have successfully run the app, let's make changes!
-
-Open `App.tsx` in your text editor of choice and make some changes. When you save, your app will automatically update and reflect these changes — this is powered by [Fast Refresh](https://reactnative.dev/docs/fast-refresh).
-
-When you want to forcefully reload, for example to reset the state of your app, you can perform a full reload:
-
-- **Android**: Press the <kbd>R</kbd> key twice or select **"Reload"** from the **Dev Menu**, accessed via <kbd>Ctrl</kbd> + <kbd>M</kbd> (Windows/Linux) or <kbd>Cmd ⌘</kbd> + <kbd>M</kbd> (macOS).
-- **iOS**: Press <kbd>R</kbd> in iOS Simulator.
-
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
-
-### Now what?
-
-- If you want to add this new React Native code to an existing application, check out the [Integration guide](https://reactnative.dev/docs/integration-with-existing-apps).
-- If you're curious to learn more about React Native, check out the [docs](https://reactnative.dev/docs/getting-started).
-
-# Troubleshooting
-
-If you're having issues getting the above steps to work, see the [Troubleshooting](https://reactnative.dev/docs/troubleshooting) page.
-
-# Learn More
-
-To learn more about React Native, take a look at the following resources:
-
-- [React Native Website](https://reactnative.dev) - learn more about React Native.
-- [Getting Started](https://reactnative.dev/docs/environment-setup) - an **overview** of React Native and how setup your environment.
-- [Learn the Basics](https://reactnative.dev/docs/getting-started) - a **guided tour** of the React Native **basics**.
-- [Blog](https://reactnative.dev/blog) - read the latest official React Native **Blog** posts.
-- [`@facebook/react-native`](https://github.com/facebook/react-native) - the Open Source; GitHub **repository** for React Native.
+Software Developer
