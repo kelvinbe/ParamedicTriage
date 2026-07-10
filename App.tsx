@@ -10,6 +10,8 @@ import {
 
 import Navigation from './src/infrastructure/navigation/index';
 
+import TriageContextProvider from './src/context/TriageContext';
+
 function App() {
   return (
     <SafeAreaProvider>
@@ -19,8 +21,9 @@ function App() {
         animated
         
       />
-
+  <TriageContextProvider >
         <Navigation />
+  </TriageContextProvider>
     </SafeAreaProvider>
   );
 }

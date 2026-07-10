@@ -1,53 +1,130 @@
-import React, { createContext, useState } from 'react';
+import React, {
+  createContext,
+  useState,
+  ReactNode,
+  useEffect
+} from 'react';
 
-import { triageApi } from '../API/triageApi';
+import { submitTriage } from '../services/triageService';
 
-import { IPatient, ITriageResult } from '../types';
+import {
+  CreateTriageDto,
+  TriageResponseDto,
+} from '../types';
 
-export const TriageContext = createContext();
+import NetInfo from '@react-native-community/netinfo';
+import { syncPendingRecords } from '../services/syncService';
 
-export default function TriageContextProvider({ children }) {
-  const [triageResult, setTriageResult] = useState<ITriageResult | null>(null);
 
-  const [loading, setLoading] = useState(false);
+interface TriageContextType {
+  triageResult: TriageResponseDto | null;
+  loading: boolean;
+  error: string;
+  submitPatient: (
+    dto: CreateTriageDto
+  ) => Promise<void>;
+  clearResult: () => void;
+}
 
-  const [error, setError] = useState('');
 
-  const submitPatient = async (patient: IPatient) => {
+export const TriageContext =
+  createContext<TriageContextType>(
+    {} as TriageContextType
+  );
+
+
+interface Props {
+  children: ReactNode;
+}
+
+
+export default function TriageContextProvider({
+  children,
+}: Props) {
+
+  const [triageResult, setTriageResult] =
+    useState<TriageResponseDto | null>(null);
+
+
+  const [loading, setLoading] =
+    useState(false);
+
+
+  const [error, setError] =
+    useState('');
+
+useEffect(() => {
+  console.log('TriageContext mounted');
+
+  const unsubscribe = NetInfo.addEventListener(state => {
+    console.log('Connection changed:', state.isConnected);
+
+    if (state.isConnected) {
+      console.log('Calling syncPendingRecords()');
+      syncPendingRecords();
+    }
+  });
+
+  return () => {
+    console.log('TriageContext unmounted');
+    unsubscribe();
+  };
+}, []);
+
+
+  const submitPatient = async (
+    dto: CreateTriageDto
+  ) => {
+
     try {
+
       setLoading(true);
 
       setError('');
 
-      const response: any = await triageApi(patient);
+      const response =
+        await submitTriage(dto);
 
+        console.log('dto', dto)
       setTriageResult(response);
 
-      return response;
-    } catch (error) {
-      console.log('triage error', error);
 
-      setError('Unable to process triage');
+    } catch (err) {
+
+      console.log(
+        'triage error',
+        err
+      );
+
+
+      setError(
+        'Unable to process triage'
+      );
+
+
     } finally {
+
       setLoading(false);
+
     }
+
   };
+
 
   const clearResult = () => {
+
     setTriageResult(null);
+
   };
+
 
   return (
     <TriageContext.Provider
       value={{
         triageResult,
-
         loading,
-
         error,
-
         submitPatient,
-
         clearResult,
       }}
     >
